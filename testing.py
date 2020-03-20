@@ -76,12 +76,12 @@ def main():
         for j in range(51):
             weights[i].append(0) #initalizing weights to all 0
 
-    #test(0)
+    test(0)
 
     #for each output node the goal is to reach 15 or -15 depending on answer
 
     BATCH_SIZE=1000 #make this divisible by 50000
-    GRADIENT_MULTIPLIER=1
+    GRADIENT_MULTIPLIER=0.0000000001
     
     for epoch_num in range(1,100):
         for batch in range(len(training)//BATCH_SIZE):
@@ -101,10 +101,12 @@ def main():
                     if (i//15==training[k][51]): #correct answer
                         cost[i]+=(15-out[i])**2
                     else:
-                        cost[i]+=(out[i]+15)**2
+                        cost[i]-=(out[i]+15)**2
 
-            print(cost)
-            print(input_avg)
+            for i in range(150):
+                for j in range(51):
+                    weights[i][j]+=cost[i]*input_avg[j]*GRADIENT_MULTIPLIER
+                    
         test(epoch_num)
         
 
