@@ -1,4 +1,5 @@
 import os
+import random
 
 training=[]
 validation=[]
@@ -17,7 +18,7 @@ def test(epoch_num):
 
     for i in range(150):
         out.append([])
-        out[i]=[sign(x) for x in weights[i]]
+        out[i]=[x for x in weights[i]] #edit this later
 
     file=open(os.getcwd()+"\\outputs\\epoch"+str(epoch_num)+".txt","w")
     for i in range(150):
@@ -74,24 +75,21 @@ def main():
     for i in range(150):
         weights.append([])
         for j in range(51):
-            weights[i].append(0) #initalizing weights to all 0
+            weights[i].append(random.uniform(-1,1)) #initialization
 
     test(0)
 
     #for each output node the goal is to reach 15 or -15 depending on answer
 
     BATCH_SIZE=1000 #make this divisible by 50000
-    GRADIENT_MULTIPLIER=0.0000000001
+    LEARNING_RATE=0.0000000000001
+    THRESHOLD=0.5
     
     for epoch_num in range(1,100):
         for batch in range(len(training)//BATCH_SIZE):
-            cost=[0]*150
-            input_avg=[0]*51
+            cost=0
             
             for k in range(BATCH_SIZE*batch,BATCH_SIZE*(batch+1)):
-                for i in range(51):
-                    input_avg[i]+=training[k][i]
-                
                 out=[0]*150
                 for i in range(150):
                     for j in range(51):
@@ -99,14 +97,25 @@ def main():
                 
                 for i in range(150):
                     if (i//15==training[k][51]): #correct answer
-                        cost[i]+=(15-out[i])**2
+                        cost+=(15-out[i])**2
                     else:
-                        cost[i]-=(out[i]+15)**2
+                        cost+=(-15-out[i])**2
 
-            for i in range(150):
-                for j in range(51):
-                    weights[i][j]+=cost[i]*input_avg[j]*GRADIENT_MULTIPLIER
-                    
+            for k in range(BATCH_SIZE*batch,BATCH_SIZE*(batch+1)):
+                out=[0]*150
+                for i in range(150):
+                    for j in range(51):
+                        out[i]+=weights[i][j]*training[k][j]
+
+                for i in range(150):
+                    for j in range(51):
+                        if (i//15==training[k][51]): 
+                            weights[i][j]+=cost*(15-out[i])*training[k][j]*LEARNING_RATE
+                        else:
+                            weights[i][j]+=cost*(-15-out[i])*training[k][j]*LEARNING_RATE
+
+            print(cost)
+            
         test(epoch_num)
         
 
